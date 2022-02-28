@@ -33,9 +33,9 @@ const LoginPage = () => {
 
     setLoading(false);
 
-    if (json?.code === RESPONSE_STATUS_SUCCESS) {
-      dispatch(setUserInfo(json.data));
-      Cookies.set(ACCESS_TOKEN_KEY, json.data.token, {
+    if (json?.success === true) {
+      dispatch(setUserInfo(json.user));
+      Cookies.set(ACCESS_TOKEN_KEY, json.user_cookie, {
         expires: values.rememberMe ? 7 : undefined,
       });
       dispatch(replace(ROUTES.home));

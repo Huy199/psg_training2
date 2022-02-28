@@ -15,7 +15,7 @@ export const Routes = (props: Props) => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Switch location={location}>
-        <ProtectedRoute path={ROUTES.home} component={HomePage} />
+        <PublicRoute path={ROUTES.home} component={HomePage} />
         <PublicRoute path="/" component={LoginPage}></PublicRoute>
       </Switch>
     </Suspense>

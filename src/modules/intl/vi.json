@@ -8,7 +8,7 @@
   "passwordRequire": "Vui lòng nhập mật khẩu",
   "minPasswordInvalid": "Mật khẩu tối thiểu 4 ký tự",
   "register": "Đăng ký",
-  "login": "Đăng nhập",
+  "login": "Login",
   "repeatPassword": "Nhập lại mật khẩu",
   "name": "Tên",
   "nameRequire": "Vui lòng nhập tên",
