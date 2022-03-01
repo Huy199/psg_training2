@@ -14,22 +14,9 @@ export const Routes = (props: Props) => {
   const location = useLocation();
 
   return (
-    <Suspense
-      fallback={
-        <Box
-          sx={{
-            width: "100%",
-            height: "100%",
-            marginLeft: "50%",
-            marginTop: "20%",
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      }
-    >
+    <Suspense fallback={<p>...Loading</p>}>
       <Switch location={location}>
-        <PublicRoute path={ROUTES.home} component={HomePage} />
+        <ProtectedRoute path={ROUTES.home} component={HomePage} />
         <PublicRoute path="/" component={LoginPage}></PublicRoute>
       </Switch>
     </Suspense>

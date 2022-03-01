@@ -2,15 +2,15 @@ import { APIHost } from "../utils/constants";
 
 enum APIService {
   auth,
-  protected,
+  apiAdmin,
   public,
 }
 
 function getBaseUrl(service: APIService) {
   if (service === APIService.auth) {
-    return `${APIHost}/authentication`;
-  } else if (service === APIService.protected) {
-    return `${APIHost}/protected`;
+    return `${APIHost}/api/authentication`;
+  } else if (service === APIService.apiAdmin) {
+    return `${APIHost}/apiAdmin`;
   } else if (service === APIService.public) {
     return `${APIHost}`;
   }
@@ -24,4 +24,6 @@ export const API_PATHS = {
   location: `${getBaseUrl(APIService.public)}/location`,
   userProfile: `${getBaseUrl(APIService.public)}/user`,
   photo: "https://jsonplaceholder.typicode.com/photos",
+  pruductList: `${getBaseUrl(APIService.public)}/products/list`,
+  admins: `${getBaseUrl(APIService.apiAdmin)}/users/list`,
 };
