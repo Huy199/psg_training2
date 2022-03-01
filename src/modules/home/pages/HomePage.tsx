@@ -1,4 +1,7 @@
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Badge,
   Box,
   Container,
@@ -18,8 +21,6 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import MuiDrawer from "@mui/material/Drawer";
 import MuiAppBar from "@mui/material/AppBar";
-import { Sidebar } from "../Sidebar";
-
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
@@ -28,26 +29,16 @@ import { NavLink } from "react-router-dom";
 import { Theme, createStyles } from "@material-ui/core/styles";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
-
+import { ExpandMoreOutlined } from "@mui/icons-material";
+import GroupIcon from "@mui/icons-material/Group";
+import UserList from "../../userList/pages/UserList";
+import { Route, Switch } from "react-router-dom";
+import ProductList from "../../productList/pages/ProductList";
+import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
+import { makeStyles } from "@material-ui/core/styles";
+import AppBar from "@mui/material/AppBar";
+import NewUser from "../../newuser/pages/NewUser";
 const drawerWidth = 240;
-
-const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== "open",
-})(({ theme, open }) => ({
-  zIndex: theme.zIndex.drawer + 1,
-  transition: theme.transitions.create(["width", "margin"], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  ...(open && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(["width", "margin"], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  }),
-}));
 
 const Drawer = styled(MuiDrawer, {
   shouldForwardProp: (prop) => prop !== "open",
@@ -78,7 +69,6 @@ const Drawer = styled(MuiDrawer, {
 const mdTheme = createTheme();
 
 function DashboardContent() {
-  // const classes = useStyles();
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -88,7 +78,7 @@ function DashboardContent() {
     <ThemeProvider theme={mdTheme}>
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
-        <AppBar position="absolute" open={open}>
+        <AppBar position="fixed">
           <Toolbar
             sx={{
               pr: "24px", // keep right padding when drawer closed
@@ -122,7 +112,12 @@ function DashboardContent() {
             </IconButton>
           </Toolbar>
         </AppBar>
-        <Drawer variant="permanent" open={open}>
+
+        <Drawer
+          variant="permanent"
+          open={open}
+          sx={{ height: "100vh", position: "fixed", width: "300px" }}
+        >
           <Toolbar
             sx={{
               display: "flex",
@@ -138,27 +133,31 @@ function DashboardContent() {
           <Divider />
 
           {/* <Sidebar /> */}
-          <List component="nav" aria-label="main mailbox folders">
+          <List component="nav">
             <NavLink
-              to="/admin/dashboard"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <ListItem button>
-                <ListItemIcon>
-                  <DashboardIcon />
-                </ListItemIcon>
-                <ListItemText primary="Dashboard" />
-              </ListItem>
-            </NavLink>
-            <NavLink
-              to="/admin/students"
+              to="/home/user-list"
               style={{ textDecoration: "none", color: "inherit" }}
             >
               <ListItem button>
                 <ListItemIcon>
                   <PeopleAltIcon />
                 </ListItemIcon>
-                <ListItemText primary="Student" />
+                <ListItemText primary="User" />
+              </ListItem>
+            </NavLink>
+
+            <NavLink
+              to="/home/product-list"
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+              }}
+            >
+              <ListItem button>
+                <ListItemIcon>
+                  <ProductionQuantityLimitsIcon />
+                </ListItemIcon>
+                <ListItemText primary="Product" />
               </ListItem>
             </NavLink>
           </List>
@@ -173,47 +172,29 @@ function DashboardContent() {
             flexGrow: 1,
             height: "100vh",
             overflow: "auto",
+            padding: "2.25rem 2.25rem 0.75rem",
+            marginTop: "65px",
+            marginLeft: "240px",
+            overflowY: "scroll",
           }}
         >
-          <Toolbar />
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Grid container spacing={3}>
-              {/* Chart */}
-              <Grid item xs={12} md={8} lg={9}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: "flex",
-                    flexDirection: "column",
-                    height: 240,
-                  }}
-                ></Paper>
-              </Grid>
-              {/* Recent Deposits */}
-              <Grid item xs={12} md={4} lg={3}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: "flex",
-                    flexDirection: "column",
-                    height: 240,
-                  }}
-                ></Paper>
-              </Grid>
-              {/* Recent Orders */}
-              <Grid item xs={12}>
-                <Paper
-                  sx={{ p: 2, display: "flex", flexDirection: "column" }}
-                ></Paper>
-              </Grid>
-            </Grid>
-          </Container>
+          <Switch>
+            <Route path="/home/user-list">
+              <UserList />
+            </Route>
+            <Route path="/home/new-user">
+              <NewUser />
+            </Route>
+            <Route path="/home/product-list">
+              <ProductList />
+            </Route>
+          </Switch>
         </Box>
       </Box>
     </ThemeProvider>
   );
 }
 
-export default function Dashboard() {
+export default function HomePage() {
   return <DashboardContent />;
 }
