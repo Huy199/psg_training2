@@ -2,7 +2,7 @@ import { Button } from "@material-ui/core";
 import { useEffect, useState } from "react";
 
 import Filter from "../components/Filter";
-import Table from "../components/Table";
+import Tables from "../components/Table";
 import { NavLink } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
@@ -38,7 +38,7 @@ export default function UserList() {
           Add user
         </Button>
       </NavLink>
-      <Table admins={admins} />
+      <Tables data={admins} />
     </div>
   );
 }

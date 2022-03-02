@@ -170,12 +170,10 @@ function DashboardContent() {
                 ? theme.palette.grey[100]
                 : theme.palette.grey[900],
             flexGrow: 1,
-            height: "100vh",
-            overflow: "auto",
+
             padding: "2.25rem 2.25rem 0.75rem",
             marginTop: "65px",
             marginLeft: "240px",
-            overflowY: "scroll",
           }}
         >
           <Switch>
