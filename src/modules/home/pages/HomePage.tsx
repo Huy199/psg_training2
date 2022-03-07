@@ -15,6 +15,8 @@ import {
   Toolbar,
   Typography,
 } from "@material-ui/core";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -189,6 +191,7 @@ function DashboardContent() {
           </Switch>
         </Box>
       </Box>
+      <ToastContainer />
     </ThemeProvider>
   );
 }

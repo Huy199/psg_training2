@@ -11,6 +11,7 @@ export interface IUsers {
   vendor: string;
   vendor_id: string;
   wishlist: string;
+  isChecked: boolean;
 }
 export interface IOrder {
   order_as_buyer: number;

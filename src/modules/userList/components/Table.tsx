@@ -10,31 +10,33 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { IUsers } from "../../../models/users";
 import { Checkbox } from "@mui/material";
-import { FormControlLabel, Box } from "@material-ui/core";
-function createData(
-  name: string,
-  calories: number,
-  fat: number,
-  carbs: number,
-  protein: number
-) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-];
+import { FormControlLabel, Box, TableSortLabel } from "@material-ui/core";
 
 interface Props {
   data?: IUsers[];
+  handleChange(e: any): void;
+  orderDirection: any;
+  valueToOrderBy: string;
+  handleRequestSort(event: any, property: any): void;
 }
 
 export default function Tables(props: Props) {
-  const { data } = props;
+  const {
+    data,
+    handleChange,
+    orderDirection,
+    valueToOrderBy,
+    handleRequestSort,
+  } = props;
+  console.log("data: ", data);
+
+  const handleChanges = (e: any) => {
+    handleChange(e);
+  };
+
+  const createSortHandler = (property: any) => (event: any) => {
+    handleRequestSort(event, property);
+  };
 
   return (
     <TableContainer component={Paper}>
@@ -42,10 +44,36 @@ export default function Tables(props: Props) {
         <TableHead>
           <TableRow>
             <TableCell>
-              <Checkbox />
+              <input
+                type="checkbox"
+                className="form-check-input"
+                name="allSelect"
+                checked={
+                  data?.filter((user) => user.isChecked !== true).length == 0
+                    ? true
+                    : false
+                }
+                onChange={handleChanges}
+              />
             </TableCell>
-            <TableCell>Login/Email</TableCell>
-            <TableCell align="right">Name</TableCell>
+            <TableCell key="vendor" align="right">
+              <TableSortLabel
+                active={valueToOrderBy === "vendor"}
+                direction={valueToOrderBy === "vendor" ? orderDirection : "asc"}
+                onClick={createSortHandler("vendor")}
+              >
+                Login/Email
+              </TableSortLabel>
+            </TableCell>
+            <TableCell key="name" align="right">
+              <TableSortLabel
+                active={valueToOrderBy === "name"}
+                direction={valueToOrderBy === "name" ? orderDirection : "asc"}
+                onClick={createSortHandler("name")}
+              >
+                Name
+              </TableSortLabel>
+            </TableCell>
             <TableCell align="right">Access level</TableCell>
             <TableCell align="right">Products</TableCell>
             <TableCell align="right">Orders</TableCell>
@@ -62,7 +90,13 @@ export default function Tables(props: Props) {
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
             >
               <TableCell align="right">
-                <Checkbox />
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  name={row.profile_id}
+                  checked={row.isChecked ? true : false}
+                  onChange={handleChanges}
+                />
               </TableCell>
 
               <TableCell component="th" scope="row">

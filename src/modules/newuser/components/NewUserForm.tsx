@@ -1,5 +1,8 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
+
+import "react-toastify/dist/ReactToastify.css";
+
 interface Inputs {
   email: string;
   firstName: string;
@@ -12,7 +15,11 @@ interface Inputs {
   paymentRailsType: string;
   access_level: number;
 }
-export default function UserEmail() {
+interface Props {
+  createUser(data: Inputs): void;
+}
+export default function NewUserForm(props: Props) {
+  const { createUser } = props;
   const {
     register,
     handleSubmit,
@@ -21,7 +28,17 @@ export default function UserEmail() {
   } = useForm<Inputs>();
   const password = useRef({});
   password.current = watch("password");
-  const onSubmit: SubmitHandler<Inputs> = (data) => console.log(data);
+  const onSubmit: SubmitHandler<Inputs> = (data) => {
+    const newData: Inputs = {
+      ...data,
+      membership_id: data.membership_id === "0" ? "" : data.membership_id,
+      forceChangePassword: data.forceChangePassword ? 1 : 0,
+      taxExempt: data.taxExempt ? 1 : 0,
+    };
+
+    createUser(newData);
+  };
+
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -168,8 +185,8 @@ export default function UserEmail() {
                 aria-label="Default select example"
                 {...register("paymentRailsType")}
               >
-                <option value="Individual">Individual</option>
-                <option value="Business">Business</option>
+                <option value="individual">Individual</option>
+                <option value="business">Business</option>
               </select>
             </div>
           </div>
@@ -218,7 +235,7 @@ export default function UserEmail() {
                 aria-label="Default select example"
                 {...register("membership_id", { required: true })}
               >
-                <option value="">Ignore Membership</option>
+                <option value="0">Ignore Membership</option>
                 <option value="4">General</option>
               </select>
             </div>
@@ -231,10 +248,7 @@ export default function UserEmail() {
               Require to change password on next log in
             </label>
             <div className="col col-3">
-              <input
-                type="checkbox"
-                {...register("forceChangePassword", { required: true })}
-              />
+              <input type="checkbox" {...register("forceChangePassword")} />
             </div>
           </div>
         </div>
@@ -248,10 +262,7 @@ export default function UserEmail() {
               Tax exempt
             </label>
             <div className="col col-3">
-              <input
-                type="checkbox"
-                {...register("taxExempt", { required: true })}
-              />
+              <input type="checkbox" {...register("taxExempt")} />
             </div>
           </div>
         </div>
