@@ -1,8 +1,10 @@
 export const ROUTES = {
-  home: "/home",
-  userlist: "/user-list",
-  contact: "/contact",
   login: "/login",
-  register: "/register",
-  payroll: "/payroll",
+  pages: "/pages",
+  user: "/users",
+  newUser: "/new-user",
+  manageUser: "/manage-user",
+  products: "/products",
+  manageProduct: "/manage-product",
+  newProduct: "/new-product",
 };

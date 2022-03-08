@@ -14,6 +14,7 @@ import { ThunkDispatch } from "redux-thunk";
 import { AppState } from "../../../redux/reducer";
 import { Action } from "redux";
 import { useHistory } from "react-router-dom";
+import { Box } from "@mui/material";
 
 interface Inputs {
   email: string;
@@ -41,15 +42,36 @@ export default function NewUser() {
     );
     if (json?.success === true) {
       setLoading(false);
-      history.push("/home/user-list");
+      history.push("/pages/users/manage-user");
       toast.success("Wow so easy!");
     }
   };
 
   return (
-    <div>
+    <Box
+      component="div"
+      sx={{
+        overflow: "auto",
+        position: "relative",
+        maxHeight: "95vh",
+        maxWidth: 1,
+        "&::-webkit-scrollbar": {
+          height: "10px",
+          width: "10px",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          background: "#b18aff",
+          borderRadius: "3px",
+        },
+        "&::-webkit-scrollbar-track": {
+          background: "#13132b",
+          borderRadius: "3px",
+        },
+      }}
+      p={4}
+    >
       <NavLink
-        to="/home/user-list"
+        to="/pages/users/manage-user"
         style={{
           textDecoration: "none",
           color: "inherit",
@@ -76,6 +98,6 @@ export default function NewUser() {
       <h3>Create Profile</h3>
       <NewUserForm createUser={createUser} />
       {loading && <Loading isStudent />}
-    </div>
+    </Box>
   );
 }

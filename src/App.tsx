@@ -30,7 +30,7 @@ function App() {
       if (json?.code === RESPONSE_STATUS_SUCCESS) {
         if (!json.error) {
           dispatch(setUserInfo({ ...json.data, token: accessToken }));
-          dispatch(replace(ROUTES.home));
+          dispatch(replace(ROUTES.pages));
           return;
         }
       }

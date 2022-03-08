@@ -38,7 +38,7 @@ const LoginPage = () => {
       Cookies.set(ACCESS_TOKEN_KEY, json.user_cookie, {
         expires: values.rememberMe ? 7 : undefined,
       });
-      dispatch(replace(ROUTES.home));
+      dispatch(replace(ROUTES.pages));
       return;
     }
 

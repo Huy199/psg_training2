@@ -33,7 +33,6 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import { ExpandMoreOutlined } from "@mui/icons-material";
 import GroupIcon from "@mui/icons-material/Group";
-import UserList from "../../userList/pages/UserList";
 import { Route, Switch } from "react-router-dom";
 import ProductList from "../../productList/pages/ProductList";
 import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
@@ -164,7 +163,7 @@ function DashboardContent() {
             </NavLink>
           </List>
         </Drawer>
-        <Box
+        {/* <Box
           component="main"
           sx={{
             backgroundColor: (theme) =>
@@ -189,7 +188,7 @@ function DashboardContent() {
               <ProductList />
             </Route>
           </Switch>
-        </Box>
+        </Box> */}
       </Box>
       <ToastContainer />
     </ThemeProvider>
