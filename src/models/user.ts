@@ -20,7 +20,7 @@ export interface IUserFilter {
   search: string;
   memberships: Array<string>;
   types: Array<string>;
-  status: string;
+  status: Array<string>;
   country: string;
   state: string;
   address: string;

@@ -1,7 +1,10 @@
+import { Input, TextField, Typography } from "@mui/material";
 import React, { useRef, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 
 import "react-toastify/dist/ReactToastify.css";
+import { Box } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 
 interface Inputs {
   email: string;
@@ -18,8 +21,10 @@ interface Inputs {
 interface Props {
   createUser(data: Inputs): void;
 }
+
 export default function NewUserForm(props: Props) {
   const { createUser } = props;
+  // const [checkSubmit, setCheckSubmit] = useState<boolean>(true);
   const {
     register,
     handleSubmit,
@@ -42,15 +47,18 @@ export default function NewUserForm(props: Props) {
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <h5 className="mt-3">Email & Password </h5>
+        <Typography variant="h6" pb={2} sx={{ color: "#fff" }}>
+          Email & Password
+        </Typography>
         <div>
           <div className="mb-3 row m-auto">
             <label
               className="form-label col col-3"
-              style={{ textAlign: "right" }}
+              style={{ textAlign: "right", color: "#fff" }}
             >
               First Name*
             </label>
+
             <div className="col col-3">
               <input
                 type="text"
@@ -67,7 +75,7 @@ export default function NewUserForm(props: Props) {
           </div>
           <div className="mb-3 row m-auto">
             <label
-              style={{ textAlign: "right" }}
+              style={{ textAlign: "right", color: "#fff" }}
               className="form-label col col-3"
             >
               Last Name*
@@ -88,7 +96,7 @@ export default function NewUserForm(props: Props) {
           </div>
           <div className="mb-3 row m-auto">
             <label
-              style={{ textAlign: "right" }}
+              style={{ textAlign: "right", color: "#fff" }}
               className="form-label col col-3"
             >
               Email*
@@ -117,7 +125,7 @@ export default function NewUserForm(props: Props) {
           </div>
           <div className="mb-3 row m-auto">
             <label
-              style={{ textAlign: "right" }}
+              style={{ textAlign: "right", color: "#fff" }}
               className="form-label col col-3"
             >
               Password*
@@ -143,7 +151,7 @@ export default function NewUserForm(props: Props) {
           </div>
           <div className="mb-3 row m-auto">
             <label
-              style={{ textAlign: "right" }}
+              style={{ textAlign: "right", color: "#fff" }}
               className="form-label col col-3"
             >
               Confirm password*
@@ -174,7 +182,7 @@ export default function NewUserForm(props: Props) {
           </div>
           <div className="mb-3 row m-auto">
             <label
-              style={{ textAlign: "right" }}
+              style={{ textAlign: "right", color: "#fff" }}
               className="form-label col col-3"
             >
               Type*
@@ -192,7 +200,7 @@ export default function NewUserForm(props: Props) {
           </div>
           <div className="mb-3 row m-auto">
             <label
-              style={{ textAlign: "right" }}
+              style={{ textAlign: "right", color: "#fff" }}
               className="form-label col col-3"
             >
               PaymentRails ID
@@ -200,11 +208,13 @@ export default function NewUserForm(props: Props) {
           </div>
         </div>
 
-        <h5 className="mt-3">Access Information </h5>
+        <Typography variant="h6" pb={2} sx={{ color: "#fff" }}>
+          Access Information
+        </Typography>
         <div>
           <div className="mb-3 row m-auto">
             <label
-              style={{ textAlign: "right" }}
+              style={{ textAlign: "right", color: "#fff" }}
               className="form-label col col-3"
             >
               Access level*
@@ -224,7 +234,7 @@ export default function NewUserForm(props: Props) {
           </div>
           <div className="mb-3 row m-auto">
             <label
-              style={{ textAlign: "right" }}
+              style={{ textAlign: "right", color: "#fff" }}
               className="form-label col col-3"
             >
               Member Ship*
@@ -242,7 +252,7 @@ export default function NewUserForm(props: Props) {
           </div>
           <div className="mb-3 row m-auto" style={{ marginLeft: "-34px" }}>
             <label
-              style={{ textAlign: "right" }}
+              style={{ textAlign: "right", color: "#fff" }}
               className="form-label col col-3"
             >
               Require to change password on next log in
@@ -252,11 +262,13 @@ export default function NewUserForm(props: Props) {
             </div>
           </div>
         </div>
-        <h5 className="mt-3">Access Information </h5>
+        <Typography variant="h6" pb={2} sx={{ color: "#fff" }}>
+          Tax Infomation
+        </Typography>
         <div>
           <div className="mb-3 row m-auto" style={{ marginLeft: "-34px" }}>
             <label
-              style={{ textAlign: "right" }}
+              style={{ textAlign: "right", color: "#fff" }}
               className="form-label col col-3"
             >
               Tax exempt
@@ -266,23 +278,30 @@ export default function NewUserForm(props: Props) {
             </div>
           </div>
         </div>
-        <div
-          style={{
+        <Box
+          component="div"
+          width={1}
+          sx={{
+            backgroundColor: "#323259",
+            border: "1px solid #1b1b38",
+            boxShadow: "0 0 13px 0 #b18aff",
             position: "sticky",
-            bottom: 0,
-            background: "#fff",
+            bottom: "30px",
             padding: "15px 2.25rem",
-            marginTop: "40px",
-
+            margin: "40px 0",
             borderWidth: "0 0 1px 1px",
-            boxShadow: "0 0 13px 0 #888",
             zIndex: 2,
           }}
         >
-          <button type="submit" className="btn btn-warning">
+          <Button
+            // disabled={checkSubmit}
+            type="submit"
+            color="warning"
+            variant="contained"
+          >
             Create Accont
-          </button>
-        </div>
+          </Button>
+        </Box>
       </form>
     </div>
   );

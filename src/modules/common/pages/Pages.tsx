@@ -29,6 +29,7 @@ import { ACCESS_TOKEN_KEY } from "../../../utils/constants";
 import ProductList from "../../productList/pages/ProductList";
 import NewUser from "../../newuser/pages/NewUser";
 import UserListPage from "../../userList/pages/UserListPage";
+import { ToastContainer } from "react-toastify";
 
 const themeOptions: ThemeOptions = {
   palette: {
@@ -41,7 +42,7 @@ const themeOptions: ThemeOptions = {
       contrastText: "#fff",
     },
     text: {
-      primary: "#fff",
+      primary: "#333",
       disabled: "#fff",
     },
   },
@@ -170,6 +171,7 @@ const Pages = (props: Props) => {
             <CircularProgress color="primary" />
           </Box>
         </Modal>
+        <ToastContainer />
       </ThemeProvider>
     </>
   );

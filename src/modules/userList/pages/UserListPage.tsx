@@ -54,11 +54,8 @@ const UserListPage = (props: Props) => {
     setFilter((prevFilter) => {
       return {
         ...filter,
-        sort: prevFilter ? prevFilter.sort : filter.sort,
-        order_by:
-          prevFilter && prevFilter.order_by === ("ASC" || "DESC") && true
-            ? prevFilter.order_by
-            : filter.order_by,
+        sort: prevFilter?.sort || "",
+        order_by: prevFilter?.order_by || "ASC",
       };
     });
   }, []);
@@ -74,10 +71,6 @@ const UserListPage = (props: Props) => {
   );
 
   //Delete
-  const handleRemoveSelectedClick = () => {
-    deleteUsers();
-  };
-
   const deleteUsers = useCallback(async () => {
     if (selectedUsers.length < 1) {
       return;
@@ -93,9 +86,16 @@ const UserListPage = (props: Props) => {
     dispatch(setLoading(false));
     if (!json?.errors) {
       console.log(json);
+      getUsers();
       return;
     }
+    // eslint-disable-next-line
   }, [dispatch, selectedUsers]);
+
+  const handleRemoveSelectedClick = () => {
+    setModal({ ...modal, openConfirmDelete: false });
+    deleteUsers();
+  };
 
   //get listUser
   const getUsers = useCallback(async () => {
@@ -127,6 +127,7 @@ const UserListPage = (props: Props) => {
   const getUserTypes = useCallback(async () => {
     dispatch(setLoading(true));
     const json = await dispatch(fetchThunk(API_PATHS.commonsRole));
+    console.log("json: ", json);
     dispatch(setLoading(false));
     if (!json?.errors) {
       dispatch(setCommonsRole(json.data));
@@ -182,7 +183,7 @@ const UserListPage = (props: Props) => {
       search: "",
       memberships: [],
       types: [],
-      status: "",
+      status: [],
       country: "",
       state: "",
       address: "",
@@ -208,7 +209,7 @@ const UserListPage = (props: Props) => {
       sx={{
         overflow: "auto",
         position: "relative",
-        maxHeight: "95vh",
+        maxHeight: "100vh",
         maxWidth: 1,
         "&::-webkit-scrollbar": {
           height: "10px",
@@ -257,16 +258,17 @@ const UserListPage = (props: Props) => {
       </Box>
       <Box
         component="div"
-        mt={2}
-        p={2}
         width={1}
         sx={{
           backgroundColor: "#323259",
-          position: "sticky",
           border: "1px solid #1b1b38",
-          borderWidth: "0 0 1px 1px",
           boxShadow: "0 0 13px 0 #b18aff",
-          bottom: "0",
+          position: "sticky",
+          bottom: "30px",
+          padding: "15px 2.25rem",
+          margin: "40px 0",
+          borderWidth: "0 0 1px 1px",
+          zIndex: 2,
         }}
       >
         <Button

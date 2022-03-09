@@ -14,8 +14,8 @@ import { ThunkDispatch } from "redux-thunk";
 import { AppState } from "../../../redux/reducer";
 import { Action } from "redux";
 import { useHistory } from "react-router-dom";
-import { Box } from "@mui/material";
-
+import { Box, Typography } from "@mui/material";
+import { setLoading } from "../../common/redux/dataReducer";
 interface Inputs {
   email: string;
   firstName: string;
@@ -31,19 +31,21 @@ interface Inputs {
 export default function NewUser() {
   const dispatch = useDispatch<ThunkDispatch<AppState, null, Action<string>>>();
   let history = useHistory();
-  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    setTimeout(() => setLoading(false), 1000);
+    dispatch(setLoading(true));
+    setTimeout(() => dispatch(setLoading(false)), 1000);
   }, []);
+
   const createUser = async (data: Inputs) => {
-    setLoading(true);
+    dispatch(setLoading(true));
     const json = await dispatch(
       fetchThunk(API_PATHS.createAdmin, "post", data)
     );
     if (json?.success === true) {
-      setLoading(false);
+      dispatch(setLoading(false));
       history.push("/pages/users/manage-user");
-      toast.success("Wow so easy!");
+      toast.success("Create user success!");
     }
   };
 
@@ -53,7 +55,7 @@ export default function NewUser() {
       sx={{
         overflow: "auto",
         position: "relative",
-        maxHeight: "95vh",
+        maxHeight: "100vh",
         maxWidth: 1,
         "&::-webkit-scrollbar": {
           height: "10px",
@@ -95,9 +97,10 @@ export default function NewUser() {
           />
         </Button>
       </NavLink>
-      <h3>Create Profile</h3>
+      <Typography variant="h4" pb={2} sx={{ color: "#fff" }}>
+        Create Profile
+      </Typography>
       <NewUserForm createUser={createUser} />
-      {loading && <Loading isStudent />}
     </Box>
   );
 }
