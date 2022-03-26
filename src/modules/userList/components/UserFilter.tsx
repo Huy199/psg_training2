@@ -40,7 +40,6 @@ const MenuProps = {
       maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
       width: 220,
       //   backgroundColor: "#323258",
-      color: "#333",
     },
   },
 };

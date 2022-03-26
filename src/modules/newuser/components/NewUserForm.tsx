@@ -5,6 +5,8 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import "react-toastify/dist/ReactToastify.css";
 import { Box } from "@material-ui/core";
 import { Button } from "@material-ui/core";
+import { useParams } from "react-router-dom";
+import { IUserDetail } from "../../../models/user";
 
 interface Inputs {
   email: string;
@@ -20,11 +22,17 @@ interface Inputs {
 }
 interface Props {
   createUser(data: Inputs): void;
+  user?: IUserDetail;
 }
 
 export default function NewUserForm(props: Props) {
-  const { createUser } = props;
-  // const [checkSubmit, setCheckSubmit] = useState<boolean>(true);
+  const { id } = useParams() as { id: string };
+  const { createUser, user } = props;
+  const [tax, setTax] = useState<boolean>(
+    user?.taxExempt === "1" ? true : false
+  );
+  console.log("tax: ", tax);
+  console.log("user: ", user);
   const {
     register,
     handleSubmit,
@@ -33,19 +41,20 @@ export default function NewUserForm(props: Props) {
   } = useForm<Inputs>();
   const password = useRef({});
   password.current = watch("password");
+  const taxExempt = useRef({});
+  taxExempt.current = watch("taxExempt");
   const onSubmit: SubmitHandler<Inputs> = (data) => {
     const newData: Inputs = {
       ...data,
       membership_id: data.membership_id === "0" ? "" : data.membership_id,
       forceChangePassword: data.forceChangePassword ? 1 : 0,
-      taxExempt: data.taxExempt ? 1 : 0,
+      taxExempt: tax ? 1 : 0,
     };
-
     createUser(newData);
   };
 
   return (
-    <div>
+    <Box>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Typography variant="h6" pb={2} sx={{ color: "#fff" }}>
           Email & Password
@@ -61,6 +70,7 @@ export default function NewUserForm(props: Props) {
 
             <div className="col col-3">
               <input
+                defaultValue={user?.firstName}
                 type="text"
                 className="form-control"
                 aria-describedby="emailHelp"
@@ -82,6 +92,7 @@ export default function NewUserForm(props: Props) {
             </label>
             <div className="col col-3">
               <input
+                defaultValue={user?.lastName}
                 type="text"
                 className="form-control"
                 aria-describedby="emailHelp"
@@ -104,6 +115,7 @@ export default function NewUserForm(props: Props) {
             <div className="col col-3">
               <input
                 type="text"
+                defaultValue={user?.email}
                 className="form-control"
                 aria-describedby="emailHelp"
                 {...register("email", {
@@ -128,14 +140,17 @@ export default function NewUserForm(props: Props) {
               style={{ textAlign: "right", color: "#fff" }}
               className="form-label col col-3"
             >
-              Password*
+              {id ? "New Password" : "Password*"}
             </label>
             <div className="col col-3">
               <input
                 type="password"
                 className="form-control"
                 aria-describedby="emailHelp"
-                {...register("password", { required: true, minLength: 6 })}
+                {...register("password", {
+                  required: !id ? true : false,
+                  minLength: 6,
+                })}
               />
               {errors.password && errors.password.type === "required" && (
                 <p style={{ color: "red", marginTop: "8px" }}>
@@ -162,7 +177,7 @@ export default function NewUserForm(props: Props) {
                 className="form-control"
                 aria-describedby="emailHelp"
                 {...register("confirm_password", {
-                  required: true,
+                  required: !id ? true : false,
                   validate: (value) => value === password.current,
                 })}
               />
@@ -274,7 +289,13 @@ export default function NewUserForm(props: Props) {
               Tax exempt
             </label>
             <div className="col col-3">
-              <input type="checkbox" {...register("taxExempt")} />
+              <input
+                defaultValue={tax ? "1" : "0"}
+                onClick={() => setTax(!tax)}
+                checked={tax}
+                type="checkbox"
+                {...register("taxExempt")}
+              />
             </div>
           </div>
         </div>
@@ -299,10 +320,10 @@ export default function NewUserForm(props: Props) {
             color="warning"
             variant="contained"
           >
-            Create Accont
+            {id ? "Saves Change" : "Create Accont"}
           </Button>
         </Box>
       </form>
-    </div>
+    </Box>
   );
 }

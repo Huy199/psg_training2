@@ -44,6 +44,11 @@ const UserListPage = (props: Props) => {
     openConfirmDelete: false,
   });
 
+  // No checked when pagination change
+  // useEffect(() => {
+  //   setSelectedUsers([]);
+  // }, [users]);
+
   // Redirect to add User
   const handleAddUserClick = (e: any) => {
     dispatch(replace(`${url}${ROUTES.user}${ROUTES.newUser}`));
@@ -61,7 +66,7 @@ const UserListPage = (props: Props) => {
   }, []);
 
   // handle sort on table
-  const handleSetFilterForUserDataTable = useCallback(
+  const handleSortForUserDataTable = useCallback(
     (sort: string, order_by: "ASC" | "DESC") => {
       setFilter((prevFilter) => {
         return prevFilter ? { ...prevFilter, sort, order_by } : prevFilter;
@@ -248,8 +253,9 @@ const UserListPage = (props: Props) => {
       </Box>
       <Box component="div" sx={{ overflow: "auto" }}>
         <UserDataTable
+          url={url}
           users={cloneUsers}
-          setFilterByPage={handleSetFilterForUserDataTable}
+          setSortByPage={handleSortForUserDataTable}
           selectedUsers={selectedUsers}
           setSelectedUsers={(selected: Array<IUserDetail>) => {
             setSelectedUsers([...selected]);

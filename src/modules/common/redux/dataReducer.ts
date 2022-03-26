@@ -1,9 +1,12 @@
 import { ActionType, createCustomAction, getType } from "typesafe-actions";
+import { IProducts } from "../../../models/product";
+import { ICategory } from "../../../models/category";
 import {
   ICountry,
   IState,
   IUserCommonRole,
   IUserDetails,
+  IUserDetail,
 } from "../../../models/user";
 
 export interface DataState {
@@ -13,6 +16,10 @@ export interface DataState {
   countries?: Array<ICountry>;
   states?: Array<IState>;
   pageInfo: { index: number; count: number };
+  pageProduct: { index: number; count: number };
+  products?: IProducts;
+  categories?: Array<ICategory>;
+  userDetail?: IUserDetail;
 }
 
 export const setLoading = createCustomAction(
@@ -51,6 +58,30 @@ export const setPageInfo = createCustomAction(
     data,
   })
 );
+export const setPageProduct = createCustomAction(
+  "data/setPageProduct",
+  (data: { index: number; count: number }) => ({
+    data,
+  })
+);
+export const setProducts = createCustomAction(
+  "data/setProducts",
+  (data: IProducts) => ({
+    data,
+  })
+);
+export const setCategories = createCustomAction(
+  "data/setCategories",
+  (data: Array<ICategory>) => ({
+    data,
+  })
+);
+export const setUserDetail = createCustomAction(
+  "data/setUserDetail",
+  (data: IUserDetail) => ({
+    data,
+  })
+);
 const actions = {
   setLoading,
   setCommonsRole,
@@ -58,12 +89,20 @@ const actions = {
   setCountries,
   setStates,
   setPageInfo,
+  setProducts,
+  setPageProduct,
+  setCategories,
+  setUserDetail,
 };
 
 type Action = ActionType<typeof actions>;
 
 export default function reducer(
-  state: DataState = { loadingData: false, pageInfo: { index: 1, count: 25 } },
+  state: DataState = {
+    loadingData: false,
+    pageInfo: { index: 1, count: 25 },
+    pageProduct: { index: 1, count: 25 },
+  },
   action: Action
 ) {
   switch (action.type) {
@@ -79,6 +118,14 @@ export default function reducer(
       return { ...state, states: action.data };
     case getType(setPageInfo):
       return { ...state, pageInfo: { ...action.data } };
+    case getType(setProducts):
+      return { ...state, products: { ...action.data } };
+    case getType(setPageProduct):
+      return { ...state, pageProduct: { ...action.data } };
+    case getType(setCategories):
+      return { ...state, categories: action.data };
+    case getType(setUserDetail):
+      return { ...state, userDetail: action.data };
     default:
       return state;
   }

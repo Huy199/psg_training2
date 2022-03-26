@@ -30,8 +30,183 @@ import ProductList from "../../productList/pages/ProductList";
 import NewUser from "../../newuser/pages/NewUser";
 import UserListPage from "../../userList/pages/UserListPage";
 import { ToastContainer } from "react-toastify";
+import NewProductPage from "../../newProduct/pages/NewProduct";
+import ProductDetailPage from "../../newProduct/pages/ProductDetailPage";
 
 const themeOptions: ThemeOptions = {
+  components: {
+    MuiCheckbox: {
+      styleOverrides: {
+        root: {
+          color: "#fff",
+          "&.Mui-checked": {
+            color: "#fff",
+          },
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          "& label.Mui-focused": {
+            color: "white",
+          },
+          "& .MuiInput-underline:after": {
+            color: "white",
+            borderBottomColor: "white",
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          color: "white",
+          backgroundColor: "#252547",
+          transitionDuration: ".15s",
+          transitionProperty: "border,background-color,color,box-shadow",
+          transitionTimingFunction: "ease-in",
+          "&:hover": {
+            backgroundColor: "#1B1B38",
+            color: "white",
+          },
+          "& fieldset": {
+            borderColor: "#1B1B38",
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: "white",
+          },
+        },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          color: "#fff",
+          "&.Mui-focused": {
+            color: "#fff",
+          },
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          color: "#fff",
+          "&.MuiSvgIcon-root": {
+            color: "#fff",
+          },
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          color: "black",
+        },
+      },
+    },
+    MuiSvgIcon: {
+      styleOverrides: {
+        root: {
+          color: "#fff",
+        },
+      },
+    },
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          color: "#fff",
+        },
+      },
+    },
+    MuiFormControlLabel: {
+      styleOverrides: {
+        root: {
+          display: "flex",
+          justifyContent: "start",
+          alignItems: "center",
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          "&::-webkit-scrollbar": {
+            height: "10px",
+            width: "10px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: "#b18aff",
+            borderRadius: "3px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "#13132b",
+            borderRadius: "3px",
+          },
+        },
+      },
+    },
+    MuiListItemText: {
+      styleOverrides: {
+        root: {
+          color: "#fff",
+          "& p": {
+            color: "#fff",
+          },
+        },
+      },
+    },
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          color: "#fff",
+        },
+      },
+    },
+    MuiTablePagination: {
+      styleOverrides: {
+        root: {
+          color: "#fff",
+          "& p": {
+            margin: 0,
+          },
+        },
+      },
+    },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          cursor: "pointer",
+          color: "#007bff",
+        },
+      },
+    },
+    MuiTabs: {
+      styleOverrides: {
+        root: {
+          "& > .MuiTabs-scroller > .MuiTabs-indicator ": {
+            backgroundColor: "#B181D9",
+          },
+        },
+      },
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          color: "#b4b4db",
+          borderColor: "#a16eff",
+          "&.Mui-selected": {
+            color: "#a16eff",
+            "&:hover": {
+              color: "#B187F3",
+            },
+          },
+        },
+      },
+    },
+  },
+
   palette: {
     primary: {
       main: "#323259",
@@ -42,8 +217,12 @@ const themeOptions: ThemeOptions = {
       contrastText: "#fff",
     },
     text: {
-      primary: "#333",
+      primary: "#fff",
       disabled: "#fff",
+    },
+    background: {
+      paper: "#323259",
+      default: "#fff",
     },
   },
 };
@@ -138,7 +317,13 @@ const Pages = (props: Props) => {
                   path={`${path}${ROUTES.products}${ROUTES.manageProduct}`}
                   component={ProductList}
                 ></Route>
-                {/* <Route path={`${path}${ROUTES.products}${ROUTES.newProduct}`} component={NewProductPage}></Route> */}
+                <Route path={`${path}${ROUTES.user}${ROUTES.detailUser}/:id`}>
+                  <NewUser url={url} />
+                </Route>
+                <Route
+                  path={`${path}${ROUTES.products}${ROUTES.newProduct}`}
+                  component={NewProductPage}
+                ></Route>
                 <Route path={`${path}${ROUTES.user}${ROUTES.manageUser}`}>
                   <UserListPage url={url} />
                 </Route>
@@ -146,6 +331,11 @@ const Pages = (props: Props) => {
                   path={`${path}${ROUTES.user}${ROUTES.newUser}`}
                   component={NewUser}
                 ></Route>
+                <Route
+                  path={`${path}${ROUTES.products}${ROUTES.detailProduct}/:id`}
+                >
+                  <ProductDetailPage url={url} />
+                </Route>
                 <Route
                   path="*"
                   render={() => (

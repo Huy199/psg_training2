@@ -39,6 +39,7 @@ import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantity
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@mui/material/AppBar";
 import NewUser from "../../newuser/pages/NewUser";
+
 const drawerWidth = 240;
 
 const Drawer = styled(MuiDrawer, {
@@ -70,6 +71,7 @@ const Drawer = styled(MuiDrawer, {
 const mdTheme = createTheme();
 
 function DashboardContent() {
+  // const classes = useStyles();
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);

@@ -1,0 +1,1441 @@
+import {
+  Autocomplete,
+  Box,
+  Grid,
+  TextField,
+  Typography,
+  CardMedia,
+  Badge,
+  IconButton,
+  Switch,
+  Select,
+  OutlinedInput,
+  MenuItem,
+  Checkbox,
+  ListItemText,
+  FormControlLabel,
+  FormControl,
+  InputLabel,
+  Button,
+  InputAdornment,
+} from "@mui/material";
+import { useCallback, useEffect, useState } from "react";
+import { FileUploader } from "react-drag-drop-files";
+import { IProductDetail, IUpdateProductParams } from "../../../models/products";
+import { commasRegex, fileToBase64String } from "../../../utils";
+import { validationUpdateProductSchema } from "../utils";
+import defaultImage from "../../../utils/defaultImage.png";
+import { RemoveCircleRounded } from "@mui/icons-material";
+import { Editor } from "@tinymce/tinymce-react";
+import CurrencyFormat from "react-currency-format";
+import { DatePicker, LocalizationProvider } from "@mui/lab";
+import AdapterDateFns from "@mui/lab/AdapterDateFns";
+import moment from "moment";
+import { LABEL_COLUMN } from "../../../utils/constants";
+import { useFormik } from "formik";
+import { useSelector } from "react-redux";
+import { AppState } from "../../../redux/reducer";
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+const fileTypes = ["JPG", "PNG", "GIF", "JPEG"];
+interface IFileImage {
+  file: File;
+  base64Src: string;
+}
+const renderCustomInput = (props: any) => {
+  const { label, required, fullWidth } = props;
+  return (
+    <FormControl size="small" required={required} fullWidth={fullWidth}>
+      <InputLabel>{label}</InputLabel>
+      <OutlinedInput {...props} />
+    </FormControl>
+  );
+};
+interface Props {
+  productDetail: IProductDetail;
+  onUpdateProduct: (values: IUpdateProductParams, files: Array<File>) => void;
+}
+const ProductDetailUpdateForm = (props: Props) => {
+  const { productDetail, onUpdateProduct } = props;
+  const { vendors, categories, conditions, brands, shippings } = useSelector(
+    (state: AppState) => ({
+      vendors: state.product.vendors,
+      categories: state.product.categories,
+      conditions: state.product.conditions,
+      brands: state.product.brands,
+      shippings: state.product.shippings,
+    })
+  );
+  const membershipTypes = {
+    memberships: [{ label: "general", value: "general" }],
+    pendingMemberships: [{ label: "general", value: "general" }],
+  };
+  const [files, setFiles] = useState<Array<IFileImage>>([]);
+  const [openAddShippingZonesField, setOpenAddShippingZonesField] =
+    useState(false);
+  const formik = useFormik({
+    initialValues: {
+      vendor_id: "",
+      name: "",
+      brand_id: "",
+      condition_id: "",
+      categories: [],
+      description: "",
+      enabled: false,
+      memberships: [],
+      shipping_to_zones: [{ id: 1, price: "0.00" }],
+      tax_exempt: false,
+      price: "0.00",
+      sale_price_type: "$",
+      arrival_date: moment(new Date()).format("yyyy-MM-DD"),
+      inventory_tracking: 0,
+      quantity: "0.00",
+      sku: "",
+      participate_sale: "0",
+      sale_price: "0",
+      og_tags_type: "0",
+      og_tags: "",
+      meta_desc_type: "A",
+      meta_description: "",
+      meta_keywords: "",
+      product_page_title: "",
+      facebook_marketing_enabled: false,
+      google_feed_enabled: false,
+      imagesOrder: [],
+      deleted_images: [],
+      id: "",
+    },
+    validationSchema: validationUpdateProductSchema(
+      vendors || [],
+      categories || [],
+      conditions || [],
+      brands || [],
+      shippings || []
+    ),
+    onSubmit: (values) => {
+      const {
+        vendor_id,
+        name,
+        brand_id,
+        condition_id,
+        categories,
+        description,
+        enabled,
+        memberships,
+        shipping_to_zones,
+        tax_exempt,
+        price,
+        sale_price_type,
+        arrival_date,
+        inventory_tracking,
+        quantity,
+        sku,
+        participate_sale,
+        sale_price,
+        og_tags_type,
+        og_tags,
+        meta_desc_type,
+        meta_description,
+        meta_keywords,
+        product_page_title,
+        facebook_marketing_enabled,
+        google_feed_enabled,
+        imagesOrder,
+        deleted_images,
+        id,
+      } = values;
+      const formValues: IUpdateProductParams = {
+        vendor_id,
+        name,
+        brand_id,
+        condition_id,
+        categories,
+        description,
+        enabled: enabled ? 1 : 0,
+        memberships,
+        shipping_to_zones,
+        tax_exempt: tax_exempt ? 1 : 0,
+        price,
+        sale_price_type,
+        arrival_date,
+        inventory_tracking,
+        quantity,
+        sku,
+        participate_sale,
+        sale_price,
+        og_tags_type,
+        og_tags,
+        meta_desc_type,
+        meta_description,
+        meta_keywords,
+        product_page_title,
+        facebook_marketing_enabled: facebook_marketing_enabled ? 1 : 0,
+        google_feed_enabled: google_feed_enabled ? 1 : 0,
+        imagesOrder,
+        deleted_images,
+        id,
+      };
+      onUpdateProduct(
+        formValues,
+        files.map((item) => item.file)
+      );
+    },
+  });
+  const [openField, setOpenField] = useState({
+    vendor: false,
+    brand: false,
+    condition: false,
+    category: false,
+    sale: false,
+  });
+
+  const addFile = useCallback(
+    async (file: File) => {
+      const base64String = await fileToBase64String(file);
+      const fileAlreadyIn = [...files].find(
+        (item) => item.base64Src === base64String
+      );
+      if (fileAlreadyIn) {
+        return;
+      }
+      setFiles((prevFiles) => {
+        const newFiles = [...prevFiles].filter(
+          (item) => item.base64Src !== base64String
+        );
+        newFiles.push({ file, base64Src: base64String });
+        return newFiles;
+      });
+    },
+    [files]
+  );
+  const removeFile = useCallback((base64Src: string) => {
+    setFiles((prevFiles) => {
+      const newFiles = [...prevFiles].filter(
+        (item) => item.base64Src !== base64Src
+      );
+      return newFiles;
+    });
+  }, []);
+  const handleAddFiles = (multipleFile: FileList) => {
+    Array.from(multipleFile).map((file) => addFile(file));
+  };
+  const isImageDeleted = (idImage: string) => {
+    return [...formik.values.deleted_images].some((item) => item === idImage);
+  };
+  const removeImage = (idImage: string) => {
+    const image = [...productDetail.images].find((item) => item.id === idImage);
+    if (!image) {
+      return;
+    }
+    const newImageOrder = [...formik.values.imagesOrder].filter(
+      (item) => item !== image.file
+    );
+    const newDeletedImages = [...formik.values.deleted_images, idImage];
+    formik.setValues({
+      ...formik.values,
+      deleted_images: newDeletedImages as never[],
+      imagesOrder: newImageOrder,
+    });
+  };
+
+  const handleAddShippingZone = (id?: number) => {
+    if (!id) {
+      return;
+    }
+    const isShippingZoneIn = [...formik.values.shipping_to_zones].find(
+      (item) => item.id === id
+    );
+    if (isShippingZoneIn) {
+      return;
+    }
+    formik.setValues({
+      ...formik.values,
+      shipping_to_zones: [
+        ...formik.values.shipping_to_zones,
+        { id, price: "0.00" },
+      ],
+    });
+  };
+  const handleRemoveShippingZone = (id: number) => {
+    if (id === 1) {
+      return;
+    }
+    const newShippingZones = [...formik.values.shipping_to_zones].filter(
+      (item) => item.id !== id
+    );
+    formik.setValues({ ...formik.values, shipping_to_zones: newShippingZones });
+  };
+
+  useEffect(() => {
+    const newImageOrder = [
+      ...productDetail.images
+        .filter((item) => !isImageDeleted(item.id))
+        .map((item) => item.file),
+      ...[...files].map((file) => file.file.name),
+    ];
+    formik.setFieldValue("imagesOrder", newImageOrder);
+    // eslint-disable-next-line
+  }, [files]);
+  useEffect(() => {
+    const {
+      vendor_id,
+      name,
+      brand_id,
+      condition_id,
+      categories,
+      description,
+      enabled,
+      memberships,
+      shipping,
+      tax_exempt,
+      price,
+      sale_price_type,
+      arrival_date,
+      inventory_tracking,
+      quantity,
+      sku,
+      participate_sale,
+      sale_price,
+      og_tags,
+      og_tags_type,
+      meta_desc_type,
+      meta_description,
+      meta_keywords,
+      product_page_title,
+      facebook_marketing_enabled,
+      google_feed_enabled,
+      images,
+      id,
+    } = productDetail;
+    formik.setValues({
+      vendor_id,
+      name,
+      brand_id,
+      condition_id: condition_id || "-1",
+      categories: [...categories].map((item) => +item.category_id) as never[],
+      description,
+      enabled: +enabled === 1,
+      memberships: [...memberships].map((item) => +item) as never[],
+      shipping_to_zones: [...shipping].map((item) => {
+        return { id: +item.id, price: item.price };
+      }) as never[],
+      tax_exempt: +tax_exempt === 1,
+      price,
+      sale_price_type,
+      arrival_date: moment.unix(+arrival_date).format("yyyy-MM-DD"),
+      inventory_tracking: +inventory_tracking,
+      quantity,
+      sku,
+      participate_sale,
+      sale_price,
+      og_tags,
+      og_tags_type,
+      meta_desc_type,
+      meta_keywords,
+      product_page_title,
+      meta_description,
+      facebook_marketing_enabled: +facebook_marketing_enabled === 1,
+      google_feed_enabled: +google_feed_enabled === 1,
+      imagesOrder: [...images].map((item) => item.file) as never[],
+      deleted_images: [],
+      id,
+    });
+    // eslint-disable-next-line
+  }, [productDetail]);
+  return (
+    <>
+      <Box component="form" width={1} onSubmit={formik.handleSubmit}>
+        <Grid container width={1} position="relative">
+          <Grid item xs={8}>
+            <Typography
+              sx={{
+                fontSize: "1.75rem",
+                paddingBottom: "1rem",
+                fontWeight: "bold",
+              }}
+            >
+              Add Product
+            </Typography>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Vendor</Typography>
+              </Grid>
+              <Grid item xs>
+                <Autocomplete
+                  size="small"
+                  open={openField.vendor}
+                  onOpen={() => {
+                    setOpenField({ ...openField, vendor: true });
+                  }}
+                  onClose={() => {
+                    setOpenField({ ...openField, vendor: false });
+                  }}
+                  getOptionLabel={(option) => option.login || option.name}
+                  options={vendors ? vendors : []}
+                  renderOption={(props, option) => {
+                    return (
+                      <li {...props} key={option.id}>
+                        {option.name}
+                      </li>
+                    );
+                  }}
+                  value={
+                    vendors?.find(
+                      (item) => item.id === formik.values.vendor_id
+                    ) || null
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      name="vendor_id"
+                      label={formik.errors.vendor_id || "Vendor"}
+                      onBlur={(e) => {
+                        const { value } = e.target;
+                        if (!value) {
+                          formik.setValues({ ...formik.values, vendor_id: "" });
+                          return;
+                        }
+                        if (!vendors) {
+                          formik.setValues({ ...formik.values, vendor_id: "" });
+                          return;
+                        }
+                        const vendor = vendors.find(
+                          (item) => item.login === value || item.name === value
+                        );
+                        if (!vendor) {
+                          formik.setValues({ ...formik.values, vendor_id: "" });
+                          return;
+                        }
+                        formik.setValues({
+                          ...formik.values,
+                          vendor_id: vendor.id,
+                        });
+                      }}
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: <>{params.InputProps.endAdornment}</>,
+                      }}
+                    />
+                  )}
+                />
+                {Boolean(formik.errors.vendor_id) && (
+                  <Box pt={2} pb={2}>
+                    <Typography color="error">
+                      {formik.errors.vendor_id}
+                    </Typography>
+                  </Box>
+                )}
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Product name</Typography>
+              </Grid>
+              <Grid item xs>
+                <TextField
+                  fullWidth
+                  required
+                  autoComplete="off"
+                  size="small"
+                  name="name"
+                  type="text"
+                  label={formik.errors.name || "Product name"}
+                  error={Boolean(formik.errors.name)}
+                  value={formik.values.name}
+                  onChange={formik.handleChange}
+                />
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Brand</Typography>
+              </Grid>
+              <Grid item xs>
+                <Autocomplete
+                  size="small"
+                  open={openField.brand}
+                  onOpen={() => {
+                    setOpenField({ ...openField, brand: true });
+                  }}
+                  onClose={() => {
+                    setOpenField({ ...openField, brand: false });
+                  }}
+                  getOptionLabel={(option) => option.name}
+                  options={brands ? brands : []}
+                  renderOption={(props, option) => {
+                    return (
+                      <li {...props} key={option.id + option.name}>
+                        {option.name}
+                      </li>
+                    );
+                  }}
+                  value={
+                    brands?.find(
+                      (item) => item.id === formik.values.brand_id
+                    ) || null
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      name="brand_id"
+                      label={formik.errors.brand_id || "Brand"}
+                      placeholder="Type Brand name to select"
+                      onBlur={(e) => {
+                        const { value } = e.target;
+                        if (!value) {
+                          formik.setValues({ ...formik.values, brand_id: "" });
+                          return;
+                        }
+                        if (!brands) {
+                          formik.setValues({ ...formik.values, brand_id: "" });
+                          return;
+                        }
+                        const brand = brands.find(
+                          (item) => item.name === value
+                        );
+                        if (!brand) {
+                          formik.setValues({ ...formik.values, brand_id: "" });
+                          return;
+                        }
+                        formik.setValues({
+                          ...formik.values,
+                          brand_id: brand.id,
+                        });
+                      }}
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: <>{params.InputProps.endAdornment}</>,
+                      }}
+                    />
+                  )}
+                />
+                {Boolean(formik.errors.brand_id) && (
+                  <Box pt={2} pb={2}>
+                    <Typography color="error">
+                      {formik.errors.brand_id}
+                    </Typography>
+                  </Box>
+                )}
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Condition</Typography>
+              </Grid>
+              <Grid item xs>
+                <Autocomplete
+                  size="small"
+                  open={openField.condition}
+                  onOpen={() => {
+                    setOpenField({ ...openField, condition: true });
+                  }}
+                  onClose={() => {
+                    setOpenField({ ...openField, condition: false });
+                  }}
+                  isOptionEqualToValue={(option, value) =>
+                    option.id === value.id
+                  }
+                  getOptionLabel={(option) => option.name}
+                  options={conditions ? conditions : []}
+                  renderOption={(props, option) => {
+                    return (
+                      <li {...props} key={option.id + option.name}>
+                        {option.name}
+                      </li>
+                    );
+                  }}
+                  value={
+                    conditions?.find(
+                      (item) => item.id === formik.values.condition_id
+                    ) || null
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      name="condition_id"
+                      label={formik.errors.condition_id || "Condition"}
+                      onBlur={(e) => {
+                        const { value } = e.target;
+                        if (!value) {
+                          formik.setValues({
+                            ...formik.values,
+                            condition_id: "",
+                          });
+                          return;
+                        }
+                        if (!conditions) {
+                          formik.setValues({
+                            ...formik.values,
+                            condition_id: "",
+                          });
+                          return;
+                        }
+                        const condition = conditions.find(
+                          (item) => item.name === value
+                        );
+                        if (!condition) {
+                          formik.setValues({
+                            ...formik.values,
+                            condition_id: "",
+                          });
+                          return;
+                        }
+                        formik.setValues({
+                          ...formik.values,
+                          condition_id: condition.id,
+                        });
+                      }}
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: <>{params.InputProps.endAdornment}</>,
+                      }}
+                    />
+                  )}
+                />
+                {Boolean(formik.errors.condition_id) && (
+                  <Box pt={2} pb={2}>
+                    <Typography color="error">
+                      {formik.errors.condition_id}
+                    </Typography>
+                  </Box>
+                )}
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">SKU</Typography>
+              </Grid>
+              <Grid item xs>
+                <TextField
+                  fullWidth
+                  autoComplete="off"
+                  size="small"
+                  name="sku"
+                  type="text"
+                  label={formik.errors.sku || "SKU"}
+                  value={formik.values.sku}
+                  onChange={formik.handleChange}
+                />
+                {Boolean(formik.errors.sku) && (
+                  <Box pt={2} pb={2}>
+                    <Typography color="error">{formik.errors.sku}</Typography>
+                  </Box>
+                )}
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Images</Typography>
+              </Grid>
+              <Grid item xs>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    alignItems: "center",
+                    width: 1,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {productDetail.images.map((item) => {
+                    if (isImageDeleted(item.id)) {
+                      return null;
+                    }
+                    return (
+                      <Badge
+                        key={item.file}
+                        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                        sx={{ mr: 2 }}
+                        badgeContent={
+                          <IconButton
+                            color="error"
+                            onClick={(e) => removeImage(item.id)}
+                          >
+                            <RemoveCircleRounded />
+                          </IconButton>
+                        }
+                      >
+                        <CardMedia
+                          component="img"
+                          sx={{
+                            width: 100,
+                            height: 100,
+                            marginBottom: "1rem",
+                            cursor: "pointer",
+                          }}
+                          src={item.thumbs[0] || defaultImage}
+                        />
+                      </Badge>
+                    );
+                  })}
+                  {files.map((item) => {
+                    return (
+                      <Badge
+                        key={item.base64Src}
+                        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                        sx={{ mr: 2 }}
+                        badgeContent={
+                          <IconButton
+                            color="error"
+                            onClick={(e) => removeFile(item.base64Src)}
+                          >
+                            <RemoveCircleRounded />
+                          </IconButton>
+                        }
+                      >
+                        <CardMedia
+                          component="img"
+                          sx={{
+                            width: 100,
+                            height: 100,
+                            marginBottom: "1rem",
+                            cursor: "pointer",
+                          }}
+                          src={item.base64Src}
+                        />
+                      </Badge>
+                    );
+                  })}
+                  <FileUploader
+                    multiple
+                    handleChange={handleAddFiles}
+                    name="file"
+                    types={fileTypes}
+                  >
+                    <CardMedia
+                      component="img"
+                      sx={{
+                        width: 100,
+                        height: 100,
+                        marginBottom: "1rem",
+                        cursor: "pointer",
+                      }}
+                      src={defaultImage}
+                    />
+                  </FileUploader>
+                </Box>
+                {Boolean(formik.errors.imagesOrder) && (
+                  <Box pt={2} pb={2}>
+                    <Typography color="error">
+                      {formik.errors.imagesOrder}
+                    </Typography>
+                  </Box>
+                )}
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Category</Typography>
+              </Grid>
+              <Grid item xs>
+                <Autocomplete
+                  size="small"
+                  open={openField.category}
+                  onOpen={() => {
+                    setOpenField({ ...openField, category: true });
+                  }}
+                  onClose={() => {
+                    setOpenField({ ...openField, category: false });
+                  }}
+                  multiple
+                  isOptionEqualToValue={(option, value) =>
+                    option.id === value.id
+                  }
+                  getOptionLabel={(option) => option.name}
+                  options={categories ? categories : []}
+                  renderOption={(props, option) => {
+                    return (
+                      <li {...props} key={option.id + option.name}>
+                        {option.name}
+                      </li>
+                    );
+                  }}
+                  placeholder="Type Categories name to select"
+                  onChange={(e, value) => {
+                    formik.setFieldValue(
+                      "categories",
+                      value.map((item) => +item.id)
+                    );
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      name="categories"
+                      label={formik.errors.categories || "Category"}
+                      placeholder="Categories"
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: <>{params.InputProps.endAdornment}</>,
+                      }}
+                    />
+                  )}
+                />
+                {Boolean(formik.errors.categories) && (
+                  <Box pt={2} pb={2}>
+                    <Typography color="error">
+                      {formik.errors.categories}
+                    </Typography>
+                  </Box>
+                )}
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Description</Typography>
+              </Grid>
+              <Grid item xs>
+                <Editor
+                  apiKey="r6fv8xh1mo9azwpl9yjhlzxlj2widuepmv44fl2ysyruywkl"
+                  initialValue={formik.values.description}
+                  init={{
+                    height: 300,
+                    menubar: false,
+                    plugins: [
+                      "advlist autolink lists link image charmap print preview anchor",
+                      "searchreplace visualblocks code fullscreen",
+                      "insertdatetime media table paste code help wordcount",
+                    ],
+                    toolbar:
+                      "undo redo | formatselect | " +
+                      "bold italic backcolor | alignleft aligncenter " +
+                      "alignright alignjustify | bullist numlist outdent indent | " +
+                      "removeformat | help",
+                    content_style:
+                      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                  }}
+                  onBlur={(evt, editor) => {
+                    formik.setFieldValue("description", editor.getContent());
+                  }}
+                />
+                {Boolean(formik.errors.description) && (
+                  <Box pt={2} pb={2}>
+                    <Typography color="error">
+                      {formik.errors.description}
+                    </Typography>{" "}
+                  </Box>
+                )}
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Available for sale</Typography>
+              </Grid>
+              <Grid item xs>
+                <Switch
+                  color="secondary"
+                  name="enabled"
+                  checked={formik.values.enabled}
+                  onChange={formik.handleChange}
+                />
+              </Grid>
+            </Grid>
+          </Grid>
+
+          <Grid item xs={8}>
+            <Typography
+              sx={{
+                fontSize: "1.5rem",
+                paddingBottom: "1rem",
+                fontWeight: "bold",
+              }}
+            >
+              Prices & Inventory
+            </Typography>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Memberships</Typography>
+              </Grid>
+              <Grid item xs>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Memberships</InputLabel>
+                  <Select
+                    multiple
+                    name="memberships"
+                    value={formik.values.memberships}
+                    input={<OutlinedInput label="Memberships" />}
+                    renderValue={(selected) => selected.join(", ")}
+                    MenuProps={MenuProps}
+                  >
+                    {membershipTypes.memberships.map((type) => (
+                      <MenuItem
+                        key={type.label + type.value}
+                        value={type.value}
+                      >
+                        <Checkbox
+                          checked={formik.values.memberships.includes(
+                            type.value as never
+                          )}
+                        />
+                        <ListItemText primary={type.value} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Tax class</Typography>
+              </Grid>
+              <Grid item xs>
+                <Grid container width={1}>
+                  <Grid item xs={3}>
+                    <Typography>Default</Typography>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          name="tax_exempt"
+                          checked={formik.values.tax_exempt}
+                          onChange={formik.handleChange}
+                        />
+                      }
+                      label="Tax exempt"
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Price</Typography>
+              </Grid>
+              <Grid item xs>
+                <Grid container width={1}>
+                  <Grid item xs={3} justifyContent="flex-start">
+                    <CurrencyFormat
+                      customInput={renderCustomInput}
+                      required={true}
+                      startAdornment={
+                        <InputAdornment position="start">$</InputAdornment>
+                      }
+                      thousandSeparator
+                      fixedDecimalScale
+                      decimalScale={2}
+                      name="price"
+                      label={formik.errors.price || "Price"}
+                      value={formik.values.price}
+                      onBlur={(e) => {
+                        formik.setFieldValue(
+                          "price",
+                          e.target.value.replace(commasRegex, "")
+                        );
+                      }}
+                    />
+                    {Boolean(formik.errors.price) && (
+                      <Box pt={2} pb={2}>
+                        <Typography color="error">
+                          {formik.errors.price}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Grid>
+                  <Grid item xs={2}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={openField.sale}
+                          onChange={(e) =>
+                            setOpenField({
+                              ...openField,
+                              sale: e.target.checked,
+                            })
+                          }
+                        />
+                      }
+                      label="Sale"
+                    />
+                  </Grid>
+                  {openField.sale && (
+                    <Grid item xs>
+                      <Grid container width={1}>
+                        <FormControl
+                          sx={{ width: "5rem" }}
+                          size="small"
+                          error={Boolean(formik.errors.sale_price_type)}
+                        >
+                          <InputLabel>
+                            {formik.errors.sale_price_type || "Sale type"}
+                          </InputLabel>
+                          <Select
+                            name="sale_price_type"
+                            type="text"
+                            value={formik.values.sale_price_type}
+                            input={
+                              <OutlinedInput
+                                label={
+                                  formik.errors.sale_price_type || "Sale type"
+                                }
+                              />
+                            }
+                            onChange={formik.handleChange}
+                            MenuProps={MenuProps}
+                          >
+                            <MenuItem value="$">$</MenuItem>
+                            <MenuItem value="%">%</MenuItem>
+                          </Select>
+                        </FormControl>
+                        <CurrencyFormat
+                          customInput={renderCustomInput}
+                          startAdornment={
+                            <InputAdornment position="start">$</InputAdornment>
+                          }
+                          thousandSeparator
+                          fixedDecimalScale
+                          decimalScale={2}
+                          name="sale_price"
+                          type="text"
+                          label={formik.errors.sale_price || "Price"}
+                          value={formik.values.sale_price}
+                          onValueChange={(values) => {
+                            const { value } = values;
+                            formik.setFieldValue("sale_price", value);
+                          }}
+                        />
+                        {Boolean(formik.errors.sale_price) && (
+                          <Box pt={2} pb={2}>
+                            <Typography color="error">
+                              {formik.errors.sale_price}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Grid>
+                    </Grid>
+                  )}
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Arrival date</Typography>
+              </Grid>
+              <Grid item xs>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DatePicker
+                    inputFormat="yyyy-MM-dd"
+                    mask="____-__-__"
+                    label="Arrival date"
+                    value={formik.values.arrival_date}
+                    onChange={(value: Date | null) => {
+                      value &&
+                        formik.setFieldValue(
+                          "arrival_date",
+                          moment(value).format("yyyy-MM-DD")
+                        );
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        fullWidth
+                        size="small"
+                        helperText={null}
+                      />
+                    )}
+                  />
+                </LocalizationProvider>
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Quantity in stock</Typography>
+              </Grid>
+              <Grid item xs={3}>
+                <CurrencyFormat
+                  fullWidth
+                  customInput={renderCustomInput}
+                  thousandSeparator
+                  fixedDecimalScale
+                  decimalScale={2}
+                  name="quantity"
+                  label={formik.errors.quantity || "Quantity in stock"}
+                  value={formik.values.quantity}
+                  onBlur={(e) => {
+                    formik.setFieldValue(
+                      "quantity",
+                      e.target.value.replace(commasRegex, "")
+                    );
+                  }}
+                />
+                {Boolean(formik.errors.quantity) && (
+                  <Box pt={2} pb={2}>
+                    <Typography color="error">
+                      {formik.errors.quantity}
+                    </Typography>
+                  </Box>
+                )}
+              </Grid>
+            </Grid>
+          </Grid>
+
+          <Grid item xs={8}>
+            <Typography
+              sx={{
+                fontSize: "1.5rem",
+                paddingBottom: "1rem",
+                fontWeight: "bold",
+              }}
+            >
+              Shipping
+            </Typography>
+            {formik.values.shipping_to_zones.map((item, index) => (
+              <Grid
+                key={`${item.id}-${Date.now()}`}
+                container
+                width={1}
+                p={2}
+                spacing={3}
+              >
+                <Grid item xs={LABEL_COLUMN}>
+                  <Typography align="right">
+                    {item.id === 1
+                      ? "Continental U.S."
+                      : shippings &&
+                        ([...shippings].find((i) => +i.id === item.id)?.name ||
+                          "")}{" "}
+                  </Typography>
+                </Grid>
+                <Grid item xs>
+                  {item.id === 1 ? (
+                    <CurrencyFormat
+                      fullWidth
+                      customInput={renderCustomInput}
+                      startAdornment={
+                        <InputAdornment position="start">$</InputAdornment>
+                      }
+                      value={item.price}
+                      thousandSeparator
+                      fixedDecimalScale
+                      decimalScale={2}
+                      label="Fee"
+                      name={`shipping_to_zones[${index}].price`}
+                      onBlur={(e) => {
+                        formik.setFieldValue(
+                          `shipping_to_zones[${index}].price`,
+                          e.target.value.replace(commasRegex, "")
+                        );
+                      }}
+                    />
+                  ) : (
+                    <Grid container width={1}>
+                      <Grid item xs={9}>
+                        <CurrencyFormat
+                          fullWidth
+                          customInput={renderCustomInput}
+                          startAdornment={
+                            <InputAdornment position="start">$</InputAdornment>
+                          }
+                          value={item.price}
+                          thousandSeparator
+                          fixedDecimalScale
+                          decimalScale={2}
+                          label="Fee"
+                          name={`shipping_to_zones[${index}].price`}
+                          onBlur={(e) => {
+                            formik.setFieldValue(
+                              `shipping_to_zones[${index}].price`,
+                              e.target.value.replace(commasRegex, "")
+                            );
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs pl={2}>
+                        <Button
+                          fullWidth
+                          color="secondary"
+                          onClick={(e) => handleRemoveShippingZone(item.id)}
+                        >
+                          Remove
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  )}
+                </Grid>
+              </Grid>
+            ))}
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}></Grid>
+              <Grid item xs>
+                <Autocomplete
+                  size="small"
+                  multiple
+                  open={openAddShippingZonesField}
+                  onOpen={() => {
+                    setOpenAddShippingZonesField(true);
+                  }}
+                  onClose={() => {
+                    setOpenAddShippingZonesField(false);
+                  }}
+                  isOptionEqualToValue={(option, value) =>
+                    option.id === value.id
+                  }
+                  getOptionLabel={(option) => option.name}
+                  options={shippings ? shippings : []}
+                  onChange={(e, value) => {
+                    value.map((item) => handleAddShippingZone(+item.id));
+                  }}
+                  renderOption={(props, option) => {
+                    return (
+                      <li {...props} key={option.id + option.name}>
+                        {option.name}
+                      </li>
+                    );
+                  }}
+                  value={
+                    shippings
+                      ? [...shippings].filter((item) =>
+                          formik.values.shipping_to_zones.some(
+                            (i) => i.id === +item.id
+                          )
+                        )
+                      : []
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Countries"
+                      placeholder="Countries"
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: <>{params.InputProps.endAdornment}</>,
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+            </Grid>
+          </Grid>
+
+          <Grid item xs={8}>
+            <Typography
+              sx={{
+                fontSize: "1.5rem",
+                paddingBottom: "1rem",
+                fontWeight: "bold",
+              }}
+            >
+              Marketing
+            </Typography>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Open Graph meta tags</Typography>
+              </Grid>
+              <Grid item xs>
+                <FormControl
+                  size="small"
+                  fullWidth
+                  error={Boolean(formik.errors.og_tags_type)}
+                >
+                  <InputLabel>
+                    {formik.errors.og_tags_type || "Type"}
+                  </InputLabel>
+                  <Select
+                    name="og_tags_type"
+                    label={formik.errors.og_tags_type || "Type"}
+                    value={formik.values.og_tags_type}
+                  >
+                    <MenuItem value="0">Autogenerated</MenuItem>
+                    <MenuItem value="1">Custom</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+            {formik.values.og_tags_type === "1" && (
+              <Grid container width={1} p={2} spacing={3}>
+                <Grid item xs={LABEL_COLUMN}>
+                  <Typography align="right"></Typography>
+                </Grid>
+                <Grid item xs>
+                  <TextField
+                    fullWidth
+                    autoComplete="off"
+                    multiline
+                    rows={4}
+                    size="small"
+                    name="og_tags"
+                    type="text"
+                    label={formik.errors.og_tags || "Tag"}
+                    value={formik.values.og_tags}
+                    onChange={formik.handleChange}
+                  />
+                  {Boolean(formik.errors.og_tags) && (
+                    <Box pt={2} pb={2}>
+                      <Typography color="error">
+                        {formik.errors.og_tags}
+                      </Typography>
+                    </Box>
+                  )}
+                </Grid>
+              </Grid>
+            )}
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Meta description</Typography>
+              </Grid>
+              <Grid item xs>
+                <FormControl
+                  size="small"
+                  fullWidth
+                  error={Boolean(formik.errors.meta_desc_type)}
+                >
+                  <InputLabel>
+                    {formik.errors.meta_desc_type || "Type"}
+                  </InputLabel>
+                  <Select
+                    name="meta_desc_type"
+                    label={formik.errors.meta_desc_type || "Type"}
+                    value={formik.values.meta_desc_type}
+                    onChange={formik.handleChange}
+                  >
+                    <MenuItem value="A">Autogenerated</MenuItem>
+                    <MenuItem value="C">Custom</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+            {formik.values.meta_desc_type === "C" && (
+              <Grid container width={1} p={2} spacing={3}>
+                <Grid item xs={LABEL_COLUMN}>
+                  <Typography align="right"></Typography>
+                </Grid>
+                <Grid item xs>
+                  <TextField
+                    fullWidth
+                    autoComplete="off"
+                    multiline
+                    rows={4}
+                    size="small"
+                    name="meta_description"
+                    type="text"
+                    label={formik.errors.meta_description || "Description"}
+                    value={formik.values.meta_description}
+                    onChange={formik.handleChange}
+                  />
+                  {Boolean(formik.errors.meta_description) && (
+                    <Box pt={2} pb={2}>
+                      <Typography color="error">
+                        {formik.errors.meta_description}
+                      </Typography>
+                    </Box>
+                  )}
+                </Grid>
+              </Grid>
+            )}
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Meta keywords</Typography>
+              </Grid>
+              <Grid item xs>
+                <TextField
+                  fullWidth
+                  autoComplete="off"
+                  size="small"
+                  name="meta_keywords"
+                  type="text"
+                  label={formik.errors.meta_keywords || "Keywords"}
+                  value={formik.values.meta_keywords}
+                  onChange={formik.handleChange}
+                />
+                {Boolean(formik.errors.meta_keywords) && (
+                  <Box pt={2} pb={2}>
+                    <Typography color="error">
+                      {formik.errors.meta_keywords}
+                    </Typography>
+                  </Box>
+                )}
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">Product page title</Typography>
+              </Grid>
+              <Grid item xs>
+                <TextField
+                  fullWidth
+                  autoComplete="off"
+                  size="small"
+                  name="product_page_title"
+                  type="text"
+                  label={formik.errors.product_page_title || "Title"}
+                  value={formik.values.product_page_title}
+                  onChange={formik.handleChange}
+                  helperText="Leave blank to use product name as Page Title."
+                />
+                {Boolean(formik.errors.product_page_title) && (
+                  <Box pt={2} pb={2}>
+                    <Typography color="error">
+                      {formik.errors.product_page_title}
+                    </Typography>
+                  </Box>
+                )}
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">
+                  Add to Facebook product feed
+                </Typography>
+              </Grid>
+              <Grid item xs>
+                <Switch
+                  color="secondary"
+                  name="facebook_marketing_enabled"
+                  checked={formik.values.facebook_marketing_enabled}
+                  onChange={formik.handleChange}
+                />
+              </Grid>
+            </Grid>
+            <Grid container width={1} p={2} spacing={3}>
+              <Grid item xs={LABEL_COLUMN}>
+                <Typography align="right">
+                  Add to Google product feed
+                </Typography>
+              </Grid>
+              <Grid item xs>
+                <Switch
+                  color="secondary"
+                  name="google_feed_enabled"
+                  checked={formik.values.google_feed_enabled}
+                  onChange={formik.handleChange}
+                />
+              </Grid>
+            </Grid>
+          </Grid>
+          <Box
+            component="div"
+            width={1}
+            sx={{
+              backgroundColor: "#323259",
+              border: "1px solid #1b1b38",
+              boxShadow: "0 0 13px 0 #b18aff",
+              position: "sticky",
+              bottom: "10px",
+              padding: "15px 2.25rem",
+              margin: "8px 0",
+              borderWidth: "0 0 1px 1px",
+              zIndex: 10,
+            }}
+          >
+            <Button
+              disabled={!formik.isValid}
+              type="submit"
+              variant="contained"
+              color="warning"
+            >
+              Update product
+            </Button>
+          </Box>
+        </Grid>
+      </Box>
+    </>
+  );
+};
+export default ProductDetailUpdateForm;

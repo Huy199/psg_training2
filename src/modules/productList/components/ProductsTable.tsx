@@ -1,3 +1,4 @@
+import { TableSortLabel } from "@material-ui/core";
 import {
   KeyboardArrowLeft,
   KeyboardArrowRight,
@@ -28,10 +29,11 @@ import { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Action } from "redux";
 import { ThunkDispatch } from "redux-thunk";
+import { IProduct, IProducts } from "../../../models/product";
 import { IUserDetail, IUserDetails } from "../../../models/user";
 import { AppState } from "../../../redux/reducer";
-import { setPageInfo } from "../../common/redux/dataReducer";
-import UserDataTableRow from "./UserDataTableRow";
+import { setPageInfo, setPageProduct } from "../../common/redux/dataReducer";
+import UserDataTableRow from "./ProductTableRow";
 interface TablePaginationActionsProps {
   count: number;
   page: number;
@@ -114,7 +116,8 @@ function TablePaginationActions(props: TablePaginationActionsProps) {
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.MuiTableCell-head`]: {
-    padding: "0.3rem",
+    padding: "0.4rem",
+    minWidth: "78px",
     borderColor: "#1B1B38",
     color: theme.palette.common.white,
   },
@@ -124,16 +127,18 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     },
 }));
 interface Props {
-  users?: IUserDetails;
-  selectedUsers: Array<IUserDetail>;
-  setSelectedUsers: (selected: Array<IUserDetail>) => void;
-  setSortByPage: (sort: string, order_by: "ASC" | "DESC") => void;
-  url: string;
+  handleSort(sort: string, order_by: "ASC" | "DESC"): void;
+  products?: Array<IProduct>;
+  total?: string;
+  selectProducts: Array<IProduct>;
+  setSelectProducts(select: Array<IProduct>): void;
 }
 
 const UserDataTable = (props: Props) => {
+  const { products, setSelectProducts, handleSort, selectProducts, total } =
+    props;
+  console.log("selectProducts: ", products);
   const dispatch = useDispatch<ThunkDispatch<AppState, null, Action<string>>>();
-  const { users, selectedUsers, setSelectedUsers, setSortByPage, url } = props;
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [sortBy, setSortBy] = useState<{
@@ -157,83 +162,19 @@ const UserDataTable = (props: Props) => {
     []
   );
 
-  // select All in table
-  const handleCheckSelectedAll = (e: any) => {
-    if (!users || rowsPerPage < 1) {
-      return;
-    }
-    if (!e.target.checked) {
-      setSelectedUsers([]);
-      return;
-    }
-    const currentUsersInPage = [...users.detail].slice(
-      page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage
-    );
-    setSelectedUsers(currentUsersInPage);
-  };
-
-  // select one in table
-  const handleCheckSelectedOne = useCallback(
-    (profile_id: string, selected: boolean) => {
-      if (!users) {
-        return;
-      }
-      // no selected
-      if (!selected) {
-        const newSelectedUsers = [...selectedUsers].filter(
-          (detail) => detail.profile_id !== profile_id
-        );
-        setSelectedUsers(newSelectedUsers);
-        return;
-      }
-      const newUser = users.detail.find(
-        (user) => user.profile_id === profile_id
-      );
-      if (!newUser) {
-        return;
-      }
-      const listNewUser = [...selectedUsers].filter(
-        (list) => list.profile_id !== profile_id
-      );
-      listNewUser.push({ ...newUser });
-      setSelectedUsers(listNewUser);
-    },
-    [selectedUsers, setSelectedUsers, users]
-  );
+  useEffect(() => {
+    dispatch(setPageProduct({ index: page, count: rowsPerPage }));
+  }, [dispatch, page, rowsPerPage]);
 
   const isSelectedAll = () => {
-    if (!users || users.detail.length < 1) {
-      return false;
-    }
-    const currentUsersInPage = [...users.detail].slice(
-      page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage
-    );
-    const currentSelectedUsers = [...selectedUsers];
-    currentUsersInPage.sort((a, b) =>
-      a.profile_id > b.profile_id ? 1 : a.profile_id < b.profile_id ? -1 : 0
-    );
-    currentSelectedUsers.sort((a, b) =>
-      a.profile_id > b.profile_id ? 1 : a.profile_id < b.profile_id ? -1 : 0
-    );
-    return (
-      JSON.stringify(currentUsersInPage) ===
-      JSON.stringify(currentSelectedUsers)
-    );
+    const productSelect = [...selectProducts];
+    const currentProducts = [...(products ?? [])];
+    productSelect.sort((a, b) => (a.id > b.id ? 1 : a.id < b.id ? -1 : 0));
+    currentProducts.sort((a, b) => (a.id > b.id ? 1 : a.id < b.id ? -1 : 0));
+    return JSON.stringify(productSelect) === JSON.stringify(currentProducts);
   };
 
-  const isSelected = useCallback(
-    (profile_id: string) => {
-      const currentSelectedUsers = [...selectedUsers];
-      const indexDetail = currentSelectedUsers.findIndex(
-        (detail) => detail.profile_id === profile_id
-      );
-      return indexDetail > -1;
-    },
-    [selectedUsers]
-  );
-
+  //Icon sort
   const getSortIcon = useCallback(
     (column: string) => {
       let icon = <></>;
@@ -250,10 +191,50 @@ const UserDataTable = (props: Props) => {
     [sortBy]
   );
 
+  // select All in table
+  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("handleSelectAll: ");
+    if (!products) {
+      return;
+    }
+    if (!event.target.checked) {
+      setSelectProducts([]);
+      return;
+    }
+
+    setSelectProducts([...products]);
+  };
+
+  // select one in table
+  const handleSelectOne = (id: string, checked: boolean) => {
+    console.log("handleSelectOne: ");
+    if (!products) {
+      return;
+    }
+    if (!checked) {
+      const currentProduct = [...selectProducts].filter(
+        (product) => product.id !== id
+      );
+      setSelectProducts(currentProduct);
+      return;
+    }
+    const currentProduct = products.find((product) => product.id === id);
+    const newSelect = [...selectProducts];
+    if (currentProduct) {
+      newSelect.push(currentProduct);
+    }
+    setSelectProducts(newSelect);
+  };
+
+  const isSelected = (id: string) => {
+    const isCheck = selectProducts.find((product) => product.id === id);
+    return isCheck ? true : false;
+  };
+
   const handleSwitchSortBy = useCallback(
-    (column: string) => {
+    (sort: string) => {
       setSortBy({
-        sort: column,
+        sort: sort,
         order_by: sortBy.order_by === "ASC" ? "DESC" : "ASC",
       });
     },
@@ -261,16 +242,8 @@ const UserDataTable = (props: Props) => {
   );
 
   useEffect(() => {
-    if (!sortBy.sort) {
-      return;
-    }
-    console.log(sortBy);
-    setSortByPage(sortBy.sort, sortBy.order_by);
-  }, [sortBy, setSortByPage]);
-
-  useEffect(() => {
-    dispatch(setPageInfo({ index: page, count: rowsPerPage }));
-  }, [dispatch, page, rowsPerPage]);
+    handleSort(sortBy.sort, sortBy.order_by);
+  }, [sortBy, handleSort]);
 
   return (
     <TableContainer
@@ -306,7 +279,7 @@ const UserDataTable = (props: Props) => {
                   <Checkbox
                     value=""
                     checked={isSelectedAll()}
-                    onChange={handleCheckSelectedAll}
+                    onChange={handleSelectAll}
                   />
                 }
               />
@@ -314,52 +287,45 @@ const UserDataTable = (props: Props) => {
             <StyledTableCell
               align="left"
               sx={{ cursor: "pointer" }}
-              onClick={(e) => handleSwitchSortBy("vendor")}
+              onClick={(e) => handleSwitchSortBy("sku")}
             >
-              Login/Email&nbsp;{getSortIcon("vendor")}
+              SKU&nbsp;{getSortIcon("sku")}
             </StyledTableCell>
             <StyledTableCell
               align="left"
               sx={{ cursor: "pointer" }}
-              onClick={(e) => handleSwitchSortBy("fistName")}
+              onClick={(e) => handleSwitchSortBy("name")}
             >
-              Name&nbsp;{getSortIcon("fistName")}
+              Name&nbsp;{getSortIcon("name")}
+            </StyledTableCell>
+            <StyledTableCell align="left" sx={{ cursor: "pointer" }}>
+              Category
+            </StyledTableCell>
+            <StyledTableCell align="left" sx={{ cursor: "pointer" }}>
+              Price
+            </StyledTableCell>
+            <StyledTableCell align="left" sx={{ cursor: "pointer" }}>
+              In Stock
+            </StyledTableCell>
+            <StyledTableCell align="left" sx={{ cursor: "pointer" }}>
+              Vendor
+            </StyledTableCell>
+            <StyledTableCell align="left" sx={{ cursor: "pointer" }}>
+              Arrival Date
             </StyledTableCell>
             <StyledTableCell
               align="left"
               sx={{ cursor: "pointer" }}
-              onClick={(e) => handleSwitchSortBy("access_level")}
-            >
-              Access level&nbsp;{getSortIcon("access_level")}
-            </StyledTableCell>
-            <StyledTableCell align="left">Products</StyledTableCell>
-            <StyledTableCell align="left">Orders</StyledTableCell>
-            <StyledTableCell align="left">Wishlist</StyledTableCell>
-            <StyledTableCell
-              align="left"
-              sx={{ cursor: "pointer" }}
-              onClick={(e) => handleSwitchSortBy("created")}
-            >
-              Created&nbsp;{getSortIcon("created")}
-            </StyledTableCell>
-            <StyledTableCell
-              align="left"
-              sx={{ cursor: "pointer" }}
-              onClick={(e) => handleSwitchSortBy("last_login")}
-            >
-              Last Login&nbsp;{getSortIcon("last_login")}
-            </StyledTableCell>
-            <StyledTableCell align="left"></StyledTableCell>
+            ></StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {users?.detail.map((user) => (
+          {products?.map((product) => (
             <UserDataTableRow
-              url={url}
-              key={user.profile_id}
-              user={user}
-              selected={isSelected(user.profile_id)}
-              setSelected={handleCheckSelectedOne}
+              setSelectProducts={handleSelectOne}
+              key={product.id}
+              selected={isSelected(product.id)}
+              product={product}
             />
           ))}
         </TableBody>
@@ -373,8 +339,8 @@ const UserDataTable = (props: Props) => {
                 100,
                 { label: "All", value: -1 },
               ]}
-              // colSpan={10}
-              count={users ? +users.recordsFiltered : 0}
+              colSpan={10}
+              count={parseInt(total ?? "") ? +parseInt(total ?? "") : 0}
               rowsPerPage={rowsPerPage}
               page={page}
               SelectProps={{

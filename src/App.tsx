@@ -1,20 +1,19 @@
-import React, { useCallback, useEffect } from "react";
-import logo from "./logo.svg";
+import { useCallback, useEffect } from "react";
 import "./App.css";
-import { useDispatch } from "react-redux";
-import { ThunkDispatch } from "redux-thunk";
-import { AppState } from "./redux/reducer";
-import { Action } from "redux";
-import { useSelector } from "react-redux";
+import { Routes } from "./Routes";
 import Cookies from "js-cookie";
 import { ACCESS_TOKEN_KEY } from "./utils/constants";
+import { useSelector, useDispatch } from "react-redux";
+import { AppState } from "./redux/reducer";
+import { ThunkDispatch } from "redux-thunk";
+import { Action } from "redux";
 import { fetchThunk } from "./modules/common/redux/thunk";
 import { API_PATHS } from "./configs/api";
-import { RESPONSE_STATUS_SUCCESS } from "./utils/httpResponseCode";
 import { setUserInfo } from "./modules/auth/redux/authReducer";
-import { replace } from "connected-react-router";
 import { ROUTES } from "./configs/routes";
-import { Routes } from "./Routes";
+import { replace } from "connected-react-router";
+import { addNotification } from "./modules/common/redux/notificationReducer";
+import { getErrorMessageResponse } from "./utils";
 
 function App() {
   const dispatch = useDispatch<ThunkDispatch<AppState, null, Action<string>>>();
@@ -26,17 +25,28 @@ function App() {
     const accessToken = Cookies.get(ACCESS_TOKEN_KEY);
 
     if (accessToken && !user) {
-      const json = await dispatch(fetchThunk(API_PATHS.userProfile));
-      if (json?.code === RESPONSE_STATUS_SUCCESS) {
-        if (!json.error) {
-          dispatch(setUserInfo({ ...json.data, token: accessToken }));
+      const jsonGetId = await dispatch(
+        fetchThunk(API_PATHS.profileDetail, "post")
+      );
+      if (!jsonGetId?.error) {
+        const { id } = jsonGetId.user;
+        const json = await dispatch(
+          fetchThunk(API_PATHS.profileDetail, "post", { id })
+        );
+        if (!json?.error) {
+          dispatch(setUserInfo({ ...json.user, token: accessToken }));
           dispatch(replace(ROUTES.pages));
-          return;
         }
+        return;
       }
+      dispatch(
+        addNotification({
+          message: getErrorMessageResponse(jsonGetId),
+          type: "error",
+        })
+      );
     }
   }, [dispatch, user]);
-
   useEffect(() => {
     getProfile();
   }, [getProfile]);

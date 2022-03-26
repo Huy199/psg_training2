@@ -79,4 +79,11 @@ export interface IUserDetail {
     order_as_buyer_total: number;
   };
   wishlist: number;
+  taxExempt: string;
+  forceChangePassword: number;
+  membership_id: string;
+  confirm_password: string;
+  status: string;
+  email: string;
+  firstName: string;
 }

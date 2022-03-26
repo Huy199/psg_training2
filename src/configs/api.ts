@@ -15,7 +15,7 @@ function getBaseUrl(service: APIService) {
   } else if (service === APIService.vendor) {
     return `${APIHost}/apiVendor`;
   } else if (service === APIService.public) {
-    return `${APIHost}`;
+    return `${APIHost}/api`;
   }
 
   return "";
@@ -23,8 +23,9 @@ function getBaseUrl(service: APIService) {
 
 export const API_PATHS = {
   signIn: `${getBaseUrl(APIService.auth)}/login`,
-  location: `${getBaseUrl(APIService.public)}/location`,
-  userProfile: `${getBaseUrl(APIService.public)}/user`,
+  // location: `${getBaseUrl(APIService.public)}/location`,
+  // userProfile: `${getBaseUrl(APIService.public)}/user`,
+  category: `${getBaseUrl(APIService.public)}/categories/list`,
   photo: "https://jsonplaceholder.typicode.com/photos",
   pruductList: `${getBaseUrl(APIService.public)}/products/list`,
   admins: `${getBaseUrl(APIService.apiAdmin)}/users/list`,
@@ -39,5 +40,10 @@ export const API_PATHS = {
   usersCreate: `${getBaseUrl(APIService.apiAdmin)}/users/create`,
   usersEdit: `${getBaseUrl(APIService.apiAdmin)}/users/edit`,
   productsCreate: `${getBaseUrl(APIService.apiAdmin)}/products/create`,
+  conditionsList: `${getBaseUrl(APIService.apiAdmin)}/conditions/list`,
+  shippingsList: `${getBaseUrl(APIService.apiAdmin)}/shipping/list`,
+  categoriesList: `${getBaseUrl(APIService.public)}/categories/list`,
   productsEdit: `${getBaseUrl(APIService.apiAdmin)}/products/edit`,
+  uploadImageFile: `${getBaseUrl(APIService.public)}/products/upload-image`,
+  productDetail: `${getBaseUrl(APIService.apiAdmin)}/products/detail`,
 };

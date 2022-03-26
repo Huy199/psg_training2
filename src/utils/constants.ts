@@ -6,6 +6,7 @@ export const APIHost = development
   : "https://google.com";
 
 export const ACCESS_TOKEN_KEY = "token";
+export const LABEL_COLUMN = 2.5;
 
 // export const APIHost = "https://api.gearfocus.div4.pgtest.co";
 
